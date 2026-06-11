@@ -8,7 +8,8 @@ module "bastion" {
   subnet_id               = local.public_subnet_id
   ami                     = data.aws_ami.ami_info.id
   key_name                = aws_key_pair.bastion_key.key_name
-  user_data               = file("bastion.sh")
+  # user_data               = file("bastion.sh")
+  
 
   depends_on = [
     aws_key_pair.bastion_key,

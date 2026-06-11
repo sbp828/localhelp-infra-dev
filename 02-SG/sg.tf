@@ -56,7 +56,7 @@ module "vpn"{
     vpc_id           =  data.aws_ssm_parameter.vpc_id.value
     common_tags      =  var.common_tags
     sg_name          =  "vpn"
-    ingress_rule     =  var.vpn_sg_rules
+    inbound_rules     =  var.vpn_sg_rules
 }
 
 # module "ansible"{
@@ -107,6 +107,16 @@ resource "aws_security_group_rule" "backend_app_alb" {
   protocol                          = "tcp"
   source_security_group_id          = module.app_alb.sg_id
   security_group_id                 = module.backend.sg_id
+}
+
+# this rule allows vpn connections to the app_alb
+resource "aws_security_group_rule" "app_alb_vpn" {
+  type                              = "ingress"
+  from_port                         = 80
+  to_port                           = 80
+  protocol                          = "tcp"
+  source_security_group_id          = module.vpn.sg_id
+  security_group_id                 = module.app_alb.sg_id
 }
 
 # this rule allows the bastion connections to the backend
