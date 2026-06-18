@@ -11,6 +11,9 @@ module "db" {
   db_name  = "appdb" #default schema for localhelp app
   username = "root"
   port     = "3306"
+  manage_master_user_password = false
+  password_wo                 = "localhelp"
+  password_wo_version         = 1
 
 
   vpc_security_group_ids = [data.aws_ssm_parameter.db_sg_id.value]
@@ -31,7 +34,7 @@ module "db" {
       Name = "${var.project_name}-${var.environment}"
     }
   )
-  manage_master_user_password = true
+  
   #master_password = var.password
   skip_final_snapshot = true
 

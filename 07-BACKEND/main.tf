@@ -3,33 +3,30 @@ module "backend" {
 
   name = "${var.project_name}-${var.environment}-${var.common_tags.Component}"
 
-  instance_type           = "t3.micro"
-  vpc_security_group_ids  = [data.aws_ssm_parameter.backend_sg_id.value]
-  subnet_id               = local.private_subnet_id
-  ami                     = data.aws_ami.ami_info.id
-  key_name                = aws_key_pair.backend_key.key_name
- # user_data               = file("backend.sh")
+  instance_type          = "t3.micro"
 
-  depends_on = [
-    aws_key_pair.backend_key,
-    aws_ssm_parameter.backend_private_key
-  ]
-
-
+root_block_device = {
+  size                  = 20
+  type                  = "gp3"
+  delete_on_termination = true
+}
+  vpc_security_group_ids = [data.aws_ssm_parameter.backend_sg_id.value]
+  subnet_id              = local.private_subnet_id
+  ami                    = data.aws_ami.ami_info.id
+  key_name               = aws_key_pair.backend_key.key_name
 
 
-  tags = merge(
-    var.common_tags,
-    {
-      Name = "${var.project_name}-${var.environment}-${var.common_tags.Component}"
-    }
 
-  )
+
+  tags = merge(var.common_tags, {
+    Name = "${var.project_name}-${var.environment}-${var.common_tags.Component}"
+  })
 }
 
 
-
-
+# ---------------------------
+# KEY PAIR (optional but OK if you use SSH manually)
+# ---------------------------
 resource "aws_key_pair" "backend_key" {
   key_name   = "${var.project_name}-${var.environment}-backend-key"
   public_key = tls_private_key.backend.public_key_openssh
@@ -40,32 +37,36 @@ resource "tls_private_key" "backend" {
   rsa_bits  = 4096
 }
 
-resource "null_resource" "backend_setup" {
+resource "null_resource" "backend" {
+
   triggers = {
-    backend_id = module.backend.id
+    instance_id = module.backend.id,
+     git_commit = var.git_commit
   }
 
   connection {
-    type                = "ssh"
-    user                = "ec2-user"
-    private_key         = aws_ssm_parameter.backend_private_key.value
-    host                = module.backend.private_ip
-    
+    type        = "ssh"
+    user        = "ec2-user"
+    private_key = tls_private_key.backend.private_key_pem
+    host        = module.backend.private_ip
   }
 
+  # Upload main script
   provisioner "file" {
-    source      = "backend.sh"
-    destination = "/tmp/backend.sh"
+    source      = "${var.common_tags.Component}.sh"
+    destination = "/tmp/${var.common_tags.Component}.sh"
   }
 
   provisioner "remote-exec" {
     inline = [
-      "chmod +x /tmp/backend.sh",
-      "sudo sh /tmp/${var.common_tags.Component}.sh"
+      "set -euxo pipefail",
+      "ls -l /tmp",
+      "chmod +x /tmp/${var.common_tags.Component}.sh",
+      "bash -x /tmp/${var.common_tags.Component}.sh ${var.common_tags.Component} ${var.environment}",
+      "cd /opt/localhelp/backend",
+      "git pull origin main",
+      "mvn clean package -DskipTests",
+      "sudo systemctl restart backend"
     ]
   }
-
-  depends_on = [
-    module.backend
-  ]
 }

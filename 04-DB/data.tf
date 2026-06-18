@@ -9,3 +9,4 @@ data "aws_ssm_parameter" "db_subnet_group_name" {
 data "aws_route53_zone" "main" {
   name = var.zone_name
 }
+

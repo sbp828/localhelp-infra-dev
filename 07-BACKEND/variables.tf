@@ -16,3 +16,8 @@ variable "common_tags"{
 }
 
 
+variable "git_commit" {
+  type        = string
+  description = "Git commit hash to force redeploy"
+}
+
