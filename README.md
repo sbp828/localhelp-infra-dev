@@ -13,5 +13,7 @@ Terraform configurations for provisioning and managing the **AWS development env
 - Infrastructure as Code (IaC)
 - Modular Terraform configuration
 - AWS resource provisioning
-- 
-<img width="967" height="544" alt="image" src="https://github.com/user-attachments/assets/3a85c67b-e050-4dde-a819-4e5ce193fe83" />
+                                             ##LocalHelp Architecture
+  
+<img width="662" height="820" alt="image" src="https://github.com/user-attachments/assets/6d4087a0-0557-458b-adb2-4194deaf5c4b" />
+
