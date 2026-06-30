@@ -7,7 +7,7 @@ rm -rf /tmp/localhelp-ansible-roles
 
 ansible-pull \
   -d /tmp/localhelp-ansible-roles \
-  -U https://github.com/sbp828/localhelp-ansible-roles \
+  -U https://github.com/BhavyaPriyanka/localhelp-ansible-roles \
   -i localhost, \
   main.yaml \
   -e component=$component \
